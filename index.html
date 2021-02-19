@@ -84,7 +84,9 @@
       // The main difference from fetchOne() will be the URL you request from; check
       // the writeup to view the URL pattern for fetch one and fetch all
       function fetchAll() {
-        // TODO
+        hideForm();
+        const url = document.getElementById('endpoint').value;
+        fetchAndDisplayResponse(url, null)
       }
 
       // This function should fetch one entry from the given endpoint.
@@ -92,23 +94,50 @@
       // The main difference from fetchAll() will be the URL you request from; check
       // the writeup to view the URL pattern for fetch one and fetch all
       function fetchOne() {
-        // TODO
+        hideForm();
+        const id = prompt('Enter item id');
+        const baseUrl = document.getElementById('endpoint').value;
+        const url = `${baseUrl}/${id}`
+        fetchAndDisplayResponse(url, null);
       }
 
       // This function should use fetch to create one entry in the given endpoint.
       // From the 4 CRUD actions, this is the CREATE action, and uses the POST http method.
       // The main difference from updateRecord() will be the URL you send data to; check
       // the writeup to view the URL pattern for create and update
-      function createRecord() {
-        // TODO
+      function createRecord(action) {
+        if(action === 'show') {
+          hideOutput();
+          displayForm();
+        } else {
+          const url = document.getElementById('endpoint').value;
+          const author = document.getElementById('author').value;
+          const title = document.getElementById('title').value;
+          const body = { title, author }
+          const config = getConfigObject('POST', body);
+          fetchAndDisplayResponse(url, config);
+        }
       }
 
       // This function should use fetch to update one existing entry in the given endpoint.
       // From the 4 CRUD actions, this is the UPDATE action, and uses the PUT http method.
       // The main difference from createRecord() will be the URL you send data to; check
       // the writeup to view the URL pattern for create and update
-      function updateRecord() {
-        // TODO
+      function updateRecord(action) {
+        if(action === 'show') {
+          hideOutput();
+          displayForm();
+          displayRecordIDForm();
+        } else {
+          const baseUrl = document.getElementById('endpoint').value;
+          const author = document.getElementById('author').value;
+          const title = document.getElementById('title').value;
+          const id = document.getElementById('recordID').value;
+          const url = `${baseUrl}/${id}`
+          const body = { id, title, author }
+          const config = getConfigObject('PUT', body);
+          fetchAndDisplayResponse(url, config);
+        }
       }
 
       // This function should use fetch to delete one existing entry in the given endpoint.
@@ -117,7 +146,58 @@
       // request; check the writeup to view the URL pattern for get one and delete. THERE IS NO 
       // delete all, only delete one.
       function deleteRecord() {
-        // TODO
+        hideForm();
+        const id = prompt('Enter item id');
+        const baseUrl = document.getElementById('endpoint').value;
+        const url = `${baseUrl}/${id}`
+        const config = getConfigObject('DELETE', null);
+        fetchAndDisplayResponse(url, config);
+      }
+
+      function hideForm() {
+        document.getElementById('recordForm').style.display = 'none';
+      }
+      
+      function displayForm() {
+        document.getElementById('recordForm').style.display = 'initial';
+      }
+
+      function displayRecordIDForm() {
+        document.getElementById('recordIDcontainer').style.display = 'initial';
+      }
+
+      function hideOutput() {
+        document.getElementById('output').innerText = '';
+      }
+
+      function getConfigObject(method, body) {
+        const config = { method };
+        if(body) {
+          config.headers = { 'Content-Type': 'application/json' };
+          config.body = JSON.stringify(body);
+        }
+        return config;
+      }
+
+      function fetchAndDisplayResponse(url, config) {
+        console.log(config)
+        fetch(url, config)
+          .then((response) => {
+            if(!response.ok) {
+              document.getElementById('output').innerText = `${response.statusText}: ${response.status}`;
+            } else {
+              response.json()
+                .then((data) => {
+                  document.getElementById('output').innerText = JSON.stringify(data);
+                })
+                .catch((error) => displayError(error))
+            }
+          })
+          .catch((error) => displayError(error));
+      }
+
+      function displayError(error) {
+        document.getElementById('output').innerText = JSON.stringify(error);
       }
 
       window.addEventListener('DOMContentLoaded', () => {
